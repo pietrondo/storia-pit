@@ -18,11 +18,11 @@
 - [ ] 1.6 Verify UI visuals, responsiveness, font switching, and basic theme toggle functionality in browser.
 
 ### PR 2: Lorebook & Storage
-- [ ] 2.1 Create `js/storage.js` to handle CRUD operations for story data in localStorage.
-- [ ] 2.2 Implement JSON import/export and plain text export in `js/storage.js`.
-- [ ] 2.3 Add localStorage quota check and calculation utility (5MB limit) in `js/storage.js`.
-- [ ] 2.4 Create `js/lorebook.js` with exact-word case-insensitive matching algorithm (`RegExp('\\b' + key + '\\b', 'i')`).
-- [ ] 2.5 Implement priority-based sorting and budget allocation logic in `js/lorebook.js` for matching entries.
+- [x] 2.1 Create `js/storage.js` to handle CRUD operations for story data in localStorage.
+- [x] 2.2 Implement JSON import/export and plain text export in `js/storage.js`.
+- [x] 2.3 Add localStorage quota check and calculation utility (5MB limit) in `js/storage.js`.
+- [x] 2.4 Create `js/lorebook.js` with exact-word case-insensitive matching algorithm (`RegExp('\\b' + key + '\\b', 'i')`).
+- [x] 2.5 Implement priority-based sorting and budget allocation logic in `js/lorebook.js` for matching entries.
 
 ### PR 3: DeepSeek API & Editor Streaming Wiring
 - [ ] 3.1 Create `js/api.js` to handle streaming generation requests using Fetch SSE.
