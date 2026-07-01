@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NovelAI Clone - Test Suite</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #0f172a;
+      color: #cbd5e1;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    h1 {
+      color: #94a3b8;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 10px;
+    }
+    .test-group {
+      margin-bottom: 30px;
+      background: #1e293b;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+      border: 1px solid #334155;
+    }
+    .test-group h2 {
+      margin-top: 0;
+      color: #38bdf8;
+      font-size: 1.25rem;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 8px;
+    }
+    .test-case {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #334155;
+    }
+    .test-case:last-child {
+      border-bottom: none;
+    }
+    .test-name {
+      font-weight: 500;
+    }
+    .status {
+      font-weight: bold;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .pass {
+      background: rgba(34, 197, 94, 0.2);
+      color: #4ade80;
+    }
+    .fail {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      font-family: monospace;
+    }
+    .summary {
+      font-size: 1.2rem;
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+      font-weight: bold;
+    }
+    .summary.all-pass {
+      background: rgba(34, 197, 94, 0.25);
+      border: 1px solid #22c55e;
+      color: #4ade80;
+    }
+    .summary.some-fail {
+      background: rgba(239, 68, 68, 0.25);
+      border: 1px solid #ef4444;
+      color: #f87171;
+    }
+  </style>
+</head>
+<body>
+  <h1>NovelAI Clone - Automated Test Suite</h1>
+  
+  <div id="results">
+    <!-- Test results injected here -->
+  </div>
+
+  <div id="final-summary"></div>
+
+  <script type="module">
+    import { matchKeywords, sortLorebook, fitEntries } from './js/lorebook.js';
+    import { prepareContext } from './js/api.js';
+    import { saveStory, loadStory, listStories, deleteStory, getStorageQuota } from './js/storage.js';
+
+    const testGroups = [];
+
+    function group(name) {
+      const currentGroup = { name, cases: [] };
+      testGroups.push(currentGroup);
+      return {
+        assert(desc, condition, errorMsg = 'Assertion failed') {
+          try {
+            const passed = typeof condition === 'function' ? condition() : condition;
+            currentGroup.cases.push({
+              desc,
+              passed: !!passed,
+              msg: passed ? 'PASS' : errorMsg
+            });
+          } catch (err) {
+            currentGroup.cases.push({
+              desc,
+              passed: false,
+              msg: err.message
+            });
+          }
+        }
+      };
+    }
+
+    // 1. Lorebook Matching Tests
+    const lorebookGroup = group('Lorebook Keyword Matching & Sorting');
+    
+    lorebookGroup.assert(
+      'Should trigger exact word match (case-insensitive)',
+      () => {
+        const text = "The adventurer Marcus entered the dark cave.";
+        const matched = matchKeywords(text, ['marcus', 'Marcus', 'cave']);
+        return matched.includes('marcus') && matched.includes('cave');
+      }
+    );
+
+    lorebookGroup.assert(
+      'Should NOT trigger partial-word match (word boundary check)',
+      () => {
+        const text = "A catastrophe occurred near the cathedral.";
+        const matched = matchKeywords(text, ['cat']);
+        return matched.length === 0;
+      }
+    );
+
+    lorebookGroup.assert(
+      'Should only scan within the last 2000 characters limit',
+      () => {
+        const longText = 'dragon '.repeat(400) + ' The warrior rested.'; // 400 * 7 = 2800 chars. "dragon" is at start.
+        const matched = matchKeywords(longText, ['dragon']);
+        return matched.length === 0; // Out of 2000 chars scan window
+      }
+    );
+
+    lorebookGroup.assert(
+      'Should sort lorebook entries by priority descending',
+      () => {
+        const entries = [
+          { id: '1', priority: 5, content: 'Low priority' },
+          { id: '2', priority: 100, content: 'High priority' },
+          { id: '3', priority: 50, content: 'Medium priority' }
+        ];
+        const sorted = sortLorebook(entries);
+        return sorted[0].priority === 100 && sorted[1].priority === 50 && sorted[2].priority === 5;
+      }
+    );
+
+    // 2. Storage CRUD Tests
+    const storageGroup = group('Story Storage CRUD & Quota');
+    
+    // Clear localStorage to make tests deterministic
+    localStorage.clear();
+
+    const testStory = {
+      id: 'test-story-id-123',
+      title: 'The Lost Relic',
+      content: 'Once upon a time...',
+      globalMemory: 'A high fantasy adventure',
+      lorebook: [
+        { id: 'lore-1', keys: ['hero'], content: 'The hero is brave.', enabled: true, priority: 10 }
+      ],
+      settings: { theme: 'amethyst-dark', fontFamily: 'serif', fontSize: 16 },
+      apiConfig: { apiKey: 'fake-key', baseUrl: 'https://api.deepseek.com/v1', model: 'deepseek-chat' }
+    };
+
+    storageGroup.assert(
+      'Should save a story and retrieve it successfully',
+      () => {
+        saveStory(testStory);
+        const loaded = loadStory(testStory.id);
+        return loaded && loaded.title === testStory.title && loaded.globalMemory === testStory.globalMemory;
+      }
+    );
+
+    storageGroup.assert(
+      'Should list all saved stories',
+      () => {
+        const list = listStories();
+        return list.length === 1 && list[0].id === testStory.id;
+      }
+    );
+
+    storageGroup.assert(
+      'Should compute storage quota percentage',
+      () => {
+        const quota = getStorageQuota();
+        return typeof quota === 'number' && quota >= 0 && quota <= 100;
+      }
+    );
+
+    storageGroup.assert(
+      'Should delete a story successfully',
+      () => {
+        deleteStory(testStory.id);
+        const loaded = loadStory(testStory.id);
+        const list = listStories();
+        return loaded === null && list.length === 0;
+      }
+    );
+
+    // 3. API Context Budgeting Tests
+    const apiGroup = group('API Context Budgeting (70/30 Rule)');
+
+    apiGroup.assert(
+      'Should fit context within 8000 character budget (under budget)',
+      () => {
+        const storyText = "The hero drew his sword against the dragon.";
+        const memory = "A fantasy world.";
+        const lorebook = [
+          { id: 'l1', keys: ['hero'], content: 'Hero description.', enabled: true, priority: 10 }
+        ];
+        
+        const result = prepareContext(storyText, memory, lorebook, 8000);
+        return result.systemPrompt.includes('Hero description.') && result.historyPrompt === storyText;
+      }
+    );
+
+    apiGroup.assert(
+      'Should restrict system prompt (memory + lorebook) to 30% of budget',
+      () => {
+        // Budget = 1000 chars. System budget is 30% = 300 chars.
+        // Base prompt = ~80 chars. Remaining for memory/lorebook = ~220 chars.
+        const storyText = "The dragon roared.";
+        const memory = "A very long memory description. ".repeat(10); // ~320 chars (exceeds budget alone)
+        const lorebook = [
+          { id: 'l1', keys: ['dragon'], content: 'Dragon entry '.repeat(20), enabled: true, priority: 10 }
+        ];
+        
+        const result = prepareContext(storyText, memory, lorebook, 1000);
+        // Ensure system prompt is under 300 chars
+        return result.systemPrompt.length <= 300;
+      }
+    );
+
+    apiGroup.assert(
+      'Should drop lower priority lorebook entries when exceeding budget',
+      () => {
+        const storyText = "The elf and the dwarf entered the tavern.";
+        const memory = "A cozy tavern.";
+        const lorebook = [
+          { id: 'l1', keys: ['elf'], content: 'Elf entry content.'.repeat(20), enabled: true, priority: 100 }, // high priority
+          { id: 'l2', keys: ['dwarf'], content: 'Dwarf entry content.'.repeat(20), enabled: true, priority: 10 }  // low priority
+        ];
+        
+        // Total budget = 1000. System budget = 300.
+        // Base prompt (~80) + Memory (~15) = ~95 chars. Available for lorebook = ~205 chars.
+        // High priority elf entry is ~360 chars, dwarf entry is ~400 chars. Both exceed budget.
+        // Elf should fit if budget is larger, but let's configure a budget of 1500 (system budget = 450).
+        // Available for lorebook = 450 - 95 = 355 chars.
+        // Elf entry (360 chars) still slightly exceeds, but let's test priority selection.
+        const result = prepareContext(storyText, memory, lorebook, 2000); // system = 600, lore = ~500 chars.
+        // Elf (~360 chars) fits. Dwarf (~400 chars) cannot fit on top of Elf (360 + 400 = 760 > 500).
+        // Therefore, Elf is included, Dwarf is dropped.
+        const includesElf = result.systemPrompt.includes('Elf entry');
+        const includesDwarf = result.systemPrompt.includes('Dwarf entry');
+        return includesElf && !includesDwarf;
+      }
+    );
+
+    // Render results
+    const resultsContainer = document.getElementById('results');
+    let allPassed = true;
+
+    testGroups.forEach(group => {
+      const groupDiv = document.createElement('div');
+      groupDiv.className = 'test-group';
+      
+      const title = document.createElement('h2');
+      title.textContent = group.name;
+      groupDiv.appendChild(title);
+
+      group.cases.forEach(c => {
+        const caseDiv = document.createElement('div');
+        caseDiv.className = 'test-case';
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'test-name';
+        nameSpan.textContent = c.desc;
+        caseDiv.appendChild(nameSpan);
+
+        const statusSpan = document.createElement('span');
+        statusSpan.className = 'status ' + (c.passed ? 'pass' : 'fail');
+        statusSpan.textContent = c.msg;
+        caseDiv.appendChild(statusSpan);
+
+        if (!c.passed) {
+          allPassed = false;
+        }
+
+        groupDiv.appendChild(caseDiv);
+      });
+
+      resultsContainer.appendChild(groupDiv);
+    });
+
+    const summaryDiv = document.getElementById('final-summary');
+    if (allPassed) {
+      summaryDiv.className = 'summary all-pass';
+      summaryDiv.textContent = '✓ ALL TESTS PASSED SUCCESSFULLY';
+      console.log('%c ALL TESTS PASSED ', 'background: #22c55e; color: #fff; font-weight: bold; padding: 4px 8px; border-radius: 4px;');
+    } else {
+      summaryDiv.className = 'summary some-fail';
+      summaryDiv.textContent = '❌ SOME TESTS FAILED. CHECK DETAILS ABOVE OR IN CONSOLE.';
+      console.error('Some tests failed!');
+    }
+  </script>
+</body>
+</html>
