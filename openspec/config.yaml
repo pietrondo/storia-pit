@@ -1,0 +1,48 @@
+project: scrivi-storia
+context: |
+  scrivi-storia is a NovelAI-like story writing assistant. It runs as a client-side
+  web application using HTML, CSS, and Vanilla JavaScript (ES Modules).
+  It connects directly to the DeepSeek API for streaming text generation.
+strict_tdd: false
+testing:
+  runner:
+    command: —
+    framework: Browser (test.html)
+  layers:
+    unit:
+      available: true
+      tool: test.html Console Assertions
+    integration:
+      available: false
+      tool: —
+    e2e:
+      available: false
+      tool: —
+  coverage:
+    available: false
+    command: —
+  quality_tools:
+    linter:
+      available: false
+      command: —
+    type_checker:
+      available: false
+      command: —
+    formatter:
+      available: false
+      command: —
+phase_rules:
+  proposal:
+    instructions: "Define product objectives and scope boundaries. Frame business/product rules."
+  spec:
+    instructions: "Write technical requirements and expectations. Define API/class contracts."
+  design:
+    instructions: "Plan architecture and components. Check system design and patterns."
+  tasks:
+    instructions: "Decompose into prioritized, independent task lists with dependencies."
+  apply:
+    instructions: "Implement code changes. Check code-review-checklist.md."
+  verify:
+    instructions: "Validate implementation against specifications and run test suite."
+  archive:
+    instructions: "Close active change and persist final state."

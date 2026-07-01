@@ -1,0 +1,237 @@
+/* css/layout.css */
+/* Grid/Flex Layout and Panel Transitions */
+
+.app-container {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  background-color: var(--bg-color);
+}
+
+/* 1. Left Sidebar (Story Directory) */
+.sidebar {
+  width: var(--sidebar-width);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border-color);
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 100;
+  transition: transform var(--transition-speed) var(--transition-timing);
+  transform: translateX(0);
+}
+
+/* 2. Right Drawer (Settings) */
+.drawer {
+  width: var(--drawer-width);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--border-color);
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 100;
+  transition: transform var(--transition-speed) var(--transition-timing);
+  transform: translateX(100%);
+}
+
+/* 3. Central Workspace */
+.workspace {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  margin-left: var(--sidebar-width);
+  margin-right: 0;
+  transition: margin var(--transition-speed) var(--transition-timing);
+  position: relative;
+}
+
+/* State Classes for Toggling Layout */
+body.sidebar-collapsed .sidebar {
+  transform: translateX(-100%);
+}
+
+body.sidebar-collapsed .workspace {
+  margin-left: 0;
+}
+
+body.drawer-open .drawer {
+  transform: translateX(0);
+}
+
+body.drawer-open .workspace {
+  margin-right: var(--drawer-width);
+}
+
+/* 4. Sub-Layouts (Flex / Grid inside panels) */
+.sidebar-header, .drawer-header {
+  height: var(--header-height);
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.sidebar-content, .drawer-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sidebar-footer, .drawer-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
+}
+
+/* Workspace Header */
+.workspace-header {
+  height: var(--header-height);
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-color);
+  z-index: 50;
+  flex-shrink: 0;
+}
+
+.header-left, .header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  max-width: 50%;
+}
+
+.story-title-input {
+  font-family: var(--font-sans);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 0.25rem 0.75rem;
+  text-align: center;
+  width: 100%;
+  max-width: 400px;
+  transition: var(--transition-smooth);
+}
+
+.story-title-input:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: var(--border-color);
+}
+
+.story-title-input:focus {
+  background: var(--input-bg);
+  border-color: var(--border-focus);
+}
+
+/* Central Editor Container */
+.editor-container {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
+  padding: 3rem 2rem;
+  position: relative;
+  background-color: var(--bg-color);
+}
+
+.editor-wrapper {
+  width: 100%;
+  max-width: var(--editor-max-width);
+  min-height: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Overlay backing for backdrop-blur on panels when mobile */
+.layout-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 90;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-speed) var(--transition-timing);
+}
+
+body.sidebar-open-mobile .layout-backdrop,
+body.drawer-open-mobile .layout-backdrop {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Responsive Overrides */
+@media (max-width: 1024px) {
+  .workspace {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  
+  .drawer {
+    transform: translateX(100%);
+  }
+  
+  body.sidebar-open-mobile .sidebar {
+    transform: translateX(0);
+  }
+  
+  body.drawer-open-mobile .drawer {
+    transform: translateX(0);
+  }
+
+  .editor-container {
+    padding: 2rem 1.25rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .workspace-header {
+    padding: 0 1rem;
+  }
+  
+  .story-title-input {
+    font-size: 1rem;
+    max-width: 180px;
+  }
+
+  .sidebar {
+    width: 280px;
+  }
+
+  .drawer {
+    width: 100%;
+    border-left: none;
+  }
+}
