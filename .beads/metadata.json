@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "scrivi_storia",
+  "project_id": "bbfa2ba8-e683-4249-802e-8d5bf8a693f3"
+}
