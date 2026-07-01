@@ -25,12 +25,12 @@
 - [x] 2.5 Implement priority-based sorting and budget allocation logic in `js/lorebook.js` for matching entries.
 
 ### PR 3: DeepSeek API & Editor Streaming Wiring
-- [ ] 3.1 Create `js/api.js` to handle streaming generation requests using Fetch SSE.
-- [ ] 3.2 Implement the 70/30 context budgeting algorithm in `js/api.js` using `lorebook.js` selectors.
-- [ ] 3.3 Create `js/editor.js` to control text selection, key event listeners, highlights, and history stack.
-- [ ] 3.4 Implement editing locks during generation stream (read-only textarea) and automatic highlight clearing.
-- [ ] 3.5 Create `js/main.js` to bootstrap the app, store central state, and coordinate events across modules.
-- [ ] 3.6 Wire "Regenerate" and "Undo" buttons to replace or discard the last AI-generated segment.
+- [x] 3.1 Create `js/api.js` to handle streaming generation requests using Fetch SSE.
+- [x] 3.2 Implement the 70/30 context budgeting algorithm in `js/api.js` using `lorebook.js` selectors.
+- [x] 3.3 Create `js/editor.js` to control text selection, key event listeners, highlights, and history stack.
+- [x] 3.4 Implement editing locks during generation stream (read-only textarea) and automatic highlight clearing.
+- [x] 3.5 Create `js/main.js` to bootstrap the app, store central state, and coordinate events across modules.
+- [x] 3.6 Wire "Regenerate" and "Undo" buttons to replace or discard the last AI-generated segment.
 
 ## 3. Verification & Testing Tasks
 - [ ] 3.1 Create `test.html` browser-based testing harness.
